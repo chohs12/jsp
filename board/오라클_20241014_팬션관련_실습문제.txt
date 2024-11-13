@@ -1,0 +1,230 @@
+[ 팬션예약 시스템 ] {출력}
+===========================================================================
+1. 회원 목록을 출력한다. (행번호,아이디,이름,연락처,성별)
+   
+   select rownum,userid,name,mobile,gender from pension3;
+   select * from pension3;
+   select rownum,pension3.* from pension3;
+   select rownum,p3.* from pension3 p3;
+   select rownum,p3.* from pension3 as p3;  -- (x)
+===========================================================================
+2. 팬션 목록을 출력한다. (행번호,방번호,가격)
+   select rownum,room,price from pension1;
+===========================================================================
+3. 제일 넓은방 정보를 출력한다.(방번호,크기,가격)
+   제일 작은방 정보를 출력한다.(방번호,크기,가격)
+
+   select max(rsize) from pension1;
+   
+   select room,rsize,price from pension1
+    where rsize=(select max(rsize) from pension1);
+===========================================================================
+4. 예약 목록을 출력한다. (방번호,체크인,체크아웃,예약자ID)
+   * 날짜는 년-월-일 *
+   
+   select room "방번호"
+	 ,to_char(sdate,'yyyy-mm-dd') "체크인"
+	 ,to_char(edate,'yyyy-mm-dd') "체크아웃"
+	 ,userid "아이디"
+   from 
+	pension2;
+===========================================================================
+5. 회원 정보 출력 ( 아이디,이름,성별 )
+   * 성별은 남성/여성으로 출력한다.*
+   
+   (1) select userid
+             ,name
+	     ,decode(gender,'M','남성','F','여성') gender
+	 from pension3;
+   
+   (2) select p3.userid
+             ,p3.name
+	     ,p3.gender
+	     ,p4.cd2
+	 from 
+	      pension3 p3, pension4 p4
+	where
+	      p3.gender = p4.cd1;
+   
+===========================================================================
+6. 예약 목록을 다음과 같이 출력한다. 
+   * 방번호,체크인,체크아웃,예약자ID,예약자명,연락처 *
+   
+   select  p2.room
+	  ,p2.sdate
+	  ,p2.edate
+	  ,p2.userid
+	  ,p3.name
+	  ,p3.mobile
+     from
+	  pension2 p2, pension3 p3
+    where
+          p2.userid = p3.userid;
+   
+===========================================================================	
+7. 오늘을 기점으로 기간이 지난 데이터를 출력한다.
+    -> 순번,방번호,기간,아이디 (기간 : 0000/00/00 ~ 0000/00/00)
+    
+   select rownum "순번"
+      ,room   "방번호"
+      ,sdate || '~' || edate "기간" 
+      ,userid
+   from  
+      pension2
+   where
+      edate < to_char(sysdate,'yyyy-mm-dd');
+===========================================================================
+8. 오늘을 기점으로 예약된 데이터를 출력한다.
+    -> 순번,방번호,기간,아이디,이름,연락처 (기간 : 0000/00/00 ~ 0000/00/00)
+    (1)
+    select rownum "순번"
+      ,room   "방번호"
+      ,sdate || '~' || edate "기간" 
+      ,userid
+    from  
+      pension2
+    where
+      sdate >= to_char(sysdate,'yyyy-mm-dd');
+--------------------------------------------
+    (2) 
+    select rownum "순번"
+          ,p2.room   "방번호"
+          ,p2.sdate || '~' || p2.edate "기간" 
+          ,p2.userid "아이디"
+          ,p3.name   "이름"
+          ,p3.mobile "연락처"
+    from  
+        pension2 p2, pension3 p3
+   where
+        p2.userid = p3.userid
+     and
+        p2.sdate >= to_char(sysdate,'yyyy-mm-dd');
+      
+===========================================================================
+9. 아이디 "test3"의 예약사항을 출력한다.
+    -> 순번,방번호,기간,아이디,이름,성별,상태 (상태 : 완료 또는 예약)(성별 : 남성 또는 여성)
+    
+    select    rownum    "순번"
+          ,p2.room   "방번호"
+          ,p2.sdate || '~' || p2.edate "기간"
+          ,p2.userid "아이디"
+          ,p3.name   "이름"
+          ,decode(p3.gender,'M','남성','F','여성') "성별" 
+         -- 완료 : edate가 오늘날짜보다 작다.
+         -- 예약 : edate가 오늘날짜보다 크다.
+	  ,nvl((select '완료' from dual where p2.edate < sysdate),'예정') "상태"
+     from
+          pension2 p2, pension3 p3
+    where
+	  p2.userid=p3.userid
+      and
+          p2.userid='test3';
+    
+  ** 9번에서 상태관련 상세한 과정 **
+
+
+(1) select '완료' from dual; -- 완료 출력 --
+(2) select '완료' from dual where 1=1; -- 완료 출력 --
+
+(3) select '완료' from dual where 1=2; -- 출력 안됨 --
+    select nvl('완료','예정') from dual where 1=2; -- 출력 안됨 --
+
+(4) select max('완료') from dual where 1=2; -- (null) 출력
+    select nvl(max('완료'),'예정') from dual where 1=2;
+
+(5)  select '완료' from dual where 1=1;
+     select '완료' from dual where '2024-10-14' < sysdate; -- 출력 o --
+
+(6)  select '완료' from dual where 1=2;
+     select '완료' from dual where '2024-10-17' < sysdate; -- 출력x --
+
+(7)  select nvl('완료','예정') from dual where 1=2;  -- (출력 x)
+     select nvl('완료','예정') from dual where '2024-10-17' < sysdate; -- (출력 x)
+
+(8) select  
+           nvl((select '완료' from dual where '2024-10-17' < sysdate),'예정') "상태" 
+    from 
+         dual;   
+   
+===========================================================================
+
+10.팬션 방번호 "101"의 이용내역 출력한다.
+    -> 순번,방번호,기간,아이디,상태
+
+select  rownum  "순번"
+       ,room    "룸번호"
+       ,sdate || '~' || edate "기간"
+       ,userid  "아이디"
+       ,nvl((select '완료' from dual where p2.edate < sysdate),'예정') "상태"
+ from 
+       pension2 p2
+ where
+       room = '101';
+       
+===========================================================================
+11. 2024년 10월의 매출액 출력하기
+    -> 년,월,매출액
+    
+    select 
+          '2024년 10월' as "날짜"
+          ,sum( p1.price * (p2.edate - p2.sdate) ) as "매출액1"
+          ,to_char(sum( p1.price * (p2.edate - p2.sdate)),'FM999,999,999') as "매출액2"
+    from
+	  pension2 p2, pension1 p1
+    where
+	  p2.room = p1.room
+      and
+          to_char(p2.sdate,'yyyy-mm') = '2024-10' ;
+
+===========================================================================
+
+** 11번 답 나오기까지의 과정 ***********
+
+(1) 예약코드,방번호,가격
+ 
+   select  p2.code
+          ,p2.room
+          ,p1.price
+    from
+	  pension2 p2, pension1 p1
+    where
+	  p2.room = p1.room;
+ ---------------------------------------------------
+(2) 숙박일을 포함하지 않은 매출액
+   select  
+          sum(p1.price) "매출액"
+    from
+	  pension2 p2, pension1 p1
+    where
+	  p2.room = p1.room
+      and 
+          to_char(p2.edate,'yyyy-mm') = '2024-10';
+ ---------------------------------------------------
+(3) 
+   select  p2.code  "코드"
+          ,p2.room  "방번호"
+          ,p1.price "가격"
+          ,(p2.edate - p2.sdate) "숙박일"
+          ,(p1.price * (p2.edate - p2.sdate)) "이용요금"
+    from
+	  pension2 p2, pension1 p1
+    where
+	  p2.room = p1.room
+      and
+          to_char(p2.sdate,'yyyy-mm') = '2024-10' ;
+---------------------------------------------------
+(4)
+   select 
+          '2024년 10월' as "날짜"
+          ,sum( p1.price * (p2.edate - p2.sdate) ) as "매출액1"
+          ,to_char(sum( p1.price * (p2.edate - p2.sdate)),'FM999,999,999') as "매출액2"
+    from
+	  pension2 p2, pension1 p1
+    where
+	  p2.room = p1.room
+      and
+          to_char(p2.sdate,'yyyy-mm') = '2024-10' ;
+
+---------------------------------------------------
+
+:::  select to_char('123456','FM999,999,999') from dual;

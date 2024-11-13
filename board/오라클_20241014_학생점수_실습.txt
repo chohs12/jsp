@@ -1,0 +1,182 @@
+std1 - 학생정보
+std2 - 학생점수
+
+1. truncate table std1;
+   truncate table std2;
+   
+   CREATE TABLE STD1(
+    USERID VARCHAR2(50), 
+	PASS   VARCHAR2(100) NOT NULL, 
+	NAME   VARCHAR2(50) NOT NULL, 
+	ADDR   VARCHAR2(100), 
+	PRIMARY KEY (USERID) );
+   
+   CREATE TABLE STD2 (	
+    USERID VARCHAR2(50) NOT NULL, 
+	GUBUN  NUMBER NOT NULL, 
+	ENG    NUMBER(3,0), 
+	KOR    NUMBER(3,0), 
+	CONSTRAINT STD2_FK FOREIGN KEY (USERID) REFERENCES STD1 (USERID) );
+   
+2. INSERT INTO STD1 VALUES('t1','1234','홍길동','서울');
+   INSERT INTO STD1 VALUES('t2','1111','임꺽정','서울');
+   INSERT INTO STD1 VALUES('t3','1212','이순희','경기');
+   INSERT INTO STD1 VALUES('t4','7777','만수루','부산');
+   INSERT INTO STD1 VALUES('t5','2222','김홍도','부산');
+
+3. INSERT INTO STD2 VALUES('t1','1','88','100');
+   INSERT INTO STD2 VALUES('t2','1','72','78');
+   INSERT INTO STD2 VALUES('t3','1','82','86');
+   INSERT INTO STD2 VALUES('t4','1','48','52');
+   INSERT INTO STD2 VALUES('t5','1','66','78');
+   
+   INSERT INTO STD2 VALUES('t1','2','82','98');
+   INSERT INTO STD2 VALUES('t2','2','68','64');
+   INSERT INTO STD2 VALUES('t3','2','84','90');
+   INSERT INTO STD2 VALUES('t4','2','60','50');
+   INSERT INTO STD2 VALUES('t5','2','70','80');
+
+4. 출력
+  (1) select * from std1;
+      select * from std2;
+  (2) 아이디,이름,주소
+	  select userid,name,addr from std1;
+	  select userid id,name nm,addr ad from std1;
+	  select std1.userid,std1.name,std1.addr from std1; 
+	  select s1.userid,s1.name,s1.addr from std1 s1;
+	  
+  (3) 점수 데이터 출력  
+      select userid,eng,kor from std2 where gubun='1';
+	  select s2.userid,s2.eng,s2.kor from std2 s2 where s2.gubun='1';
+	  
+  (4) 혼합 출력
+      
+	- 아이디,이름,주소,영어,국어 - 1회 시험
+	
+	  select  userid
+	         ,name
+			 ,addr
+			 ,(select eng from std2 where userid=std1.userid and gubun=1) eng
+			 ,(select kor from std2 where userid=std1.userid and gubun=1) kor
+		from 
+		     std1
+	  
+  (5) 테이블 조인 출력
+     
+	  select std1.userid
+	        ,std1.name
+			,std1.addr
+			,std2.eng
+			,std2.kor 
+		from 
+			std1, std2
+	  where	
+	        std1.userid = std2.userid  -- 조인조건
+		and
+			std2.gubun = 1;  -- 일반조건
+	
+	(6) 아이디,이름,영어,국어,합계,평균
+		
+	  select std1.userid
+	        ,std1.name
+			,std1.addr
+			,std2.eng
+			,std2.kor 
+			,(std2.eng+std2.kor) hap
+			,round( (std2.eng+std2.kor)/3, 2) avg
+		from 
+			std1, std2
+	  where	
+	        std1.userid = std2.userid  -- 조인조건
+		and
+			std2.gubun = 1;
+			
+	(7) 별칭을 이용한 표현
+	
+	  select s1.userid  userid
+	        ,s1.name    name
+			,s1.addr    addr
+			,s2.eng     eng
+			,s2.kor     kor
+		from 
+			std1 s1, std2 s2
+	  where	
+	        s1.userid = s2.userid  -- 조인조건
+		and
+			s2.gubun = 1;
+
+			
+			
+[ 사원/부서/급여정보 테이블 ]
+
+1. 사원번호, 사원이름, 부서이름
+
+  select empno
+        ,ename
+		,(select dept.dname from dept where dept.deptno=emp.deptno) dname
+	from
+		emp;
+  -----------------------------------------------------------------------
+    select e.empno
+         , e.ename
+		 , d.dname
+	from
+		emp e, dept d  
+	where
+		e.deptno = d.deptno;
+  -----------------------------------------------------------------------
+
+2. 사원번호, 사원이름, 부서번호, 부서이름 
+   
+    select  e.empno
+	       ,e.ename
+		   ,d.deptno
+		   ,d.dname
+	from 
+		   emp e, dept d
+	where
+		   e.deptno = d.deptno;
+	-----------------------------------------------------------------------
+    select  empno
+	       ,ename
+		   ,e.deptno
+		   ,dname
+	from 
+		   emp e, dept d
+	where
+		   e.deptno = d.deptno;
+
+
+3. 사원번호,사원이름,급여,등급(급여) 
+
+    select   e.empno empno
+			,e.ename ename
+			,e.sal   sal
+			,s.grade level1
+	from
+			emp e, salgrade s
+	where
+			e.sal between s.losal and s.hisal;
+
+4. 사원번호, 사원이름, 부서번호, 부서이름
+
+    select  e.empno
+	       ,e.ename
+		   ,d.deptno
+		   ,d.dname
+	from 
+		   emp e, dept d
+	where
+		   e.deptno = d.deptno(+);
+		   
+5. 사원번호,사원이름,매니저번호,매니저이름
+
+	select 
+		  e1.empno  empno
+		 ,e1.ename  ename
+		 ,e1.mgr    mgr
+		 ,e2.ename  mgrname
+	from 
+		 emp e1, emp e2
+	where
+		 e1.mgr = e2.empno;

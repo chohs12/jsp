@@ -1,0 +1,28 @@
+
+1. 팬션정보
+insert into pension1 values('101','50','50000');
+insert into pension1 values('102','50','50000');
+insert into pension1 values('103','80','80000');
+insert into pension1 values('104','80','80000');
+insert into pension1 values('105','100','100000');
+
+2. 회원정보  
+insert into pension3 values('test1','1234','홍길동','010-7777-1212','M');
+insert into pension3 values('test2','1111','임꺽정','010-3333-1245','M');
+insert into pension3 values('test3','5656','김영희','010-2222-7712','F');
+insert into pension3 values('test5','5757','강호동','010-7345-1111','M');
+
+3. 예약정보
+insert into pension2 values(pension2_seq.nextval,'101','2024-10-01','2024-10-02','test1');
+insert into pension2 values(pension2_seq.nextval,'101','2024-10-09','2024-10-10','test3');
+insert into pension2 values(pension2_seq.nextval,'104','2024-10-02','2024-10-03','test2');
+insert into pension2 values(pension2_seq.nextval,'101','2024-10-14','2024-10-17','test3');
+insert into pension2 values(pension2_seq.nextval,'104','2024-10-22','2024-10-25','test5');
+
+4. 코드정보
+insert into pension4 values(pension4_seq.nextval,'M','남성');
+insert into pension4 values(pension4_seq.nextval,'F','여성');
+
+
+
+
